@@ -29,15 +29,16 @@ inquirer
             default:
         }
         function viewProducts(){
-
+            console.log("View Product");
         }
         function viewLow(){
-
+            console.log("View Low");
         }
         function addInventory(){
+            console.log("Add Inventory");
 
         }
         function addProduct(){
-g
+            console.log("Add Product");
         }
     })

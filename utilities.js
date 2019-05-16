@@ -1,3 +1,5 @@
+//attempt to make one oneExit function still a work in progress 
+
 var inquirer = require("inquirer");
 
 function oneExit(err, connection, func, message) {

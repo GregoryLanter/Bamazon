@@ -1,9 +1,12 @@
+//add required files
 let connection = require("./connection.js");
 let inquirer = require("inquirer");
 let choiceArr = ["View Products for Sale", "View Low Inventory", "Add to Inventory", "Add New Product"];
 let item_desc = "";
 
+//main function for manager
 function manager() {
+    //display choices
     inquirer
         .prompt([
             {
@@ -15,6 +18,7 @@ function manager() {
         ])
         .then(function (answer) {
             //console.log(answer);
+            // branch out to diffent choices
             switch (answer.action) {
                 case "View Products for Sale":
                     viewProducts();
@@ -31,6 +35,7 @@ function manager() {
                 default:
             }
             function viewProducts() {
+                //display products
                 var selectQuery = connection.query(
                     "select * from products",
 
@@ -45,11 +50,13 @@ function manager() {
                             console.log(productStr);
 
                         }
+                        //loop back to activity choice
                         oneExit("");
                     }
                 )
             }
             function viewLow() {
+                //display items with inventory less than 5
                 var selectQuery = connection.query(
                     "select * from products where stock_quantity < 5",
                     function (err, res) {
@@ -62,13 +69,16 @@ function manager() {
                             productStr += "Units Remaining: " + res[i].stock_quantity + " " + "\n";
                             console.log(productStr);
                         }
+                        //let user no we have no low iventory
                         if(res.length == 0) console.log("There is no low inventory");
+                        //loop back to choices
                         oneExit("");
                     }
                 )
             }
             function addInventory() {
                 //    console.log("Add Inventory");
+                // add more units
                 var selectQuery = connection.query(
                     "select * from products",
 

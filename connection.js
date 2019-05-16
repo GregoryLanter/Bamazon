@@ -1,3 +1,4 @@
+//create a connection to the database
 var mysql = require("mysql");
 var connection = mysql.createConnection({
     host: "localhost",
@@ -27,5 +28,6 @@ function selectStar() {
     );
 });
 */
+//make connection available to the user
 module.exports = connection;
 //module.exports = selectStar();

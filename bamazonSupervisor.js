@@ -1,3 +1,4 @@
+//load required files
 let connection = require("./connection.js");
 let inquirer = require("inquirer");
 let choiceArr = ["View Product Sales by Department", "Create New Department"];
@@ -6,6 +7,7 @@ let table = require("table");
 
 
 function supervisor() {
+    //prompt user for what actioin they want to do
     inquirer
         .prompt([
             {
@@ -16,6 +18,7 @@ function supervisor() {
             },
         ])
         .then(function (answer) {
+            //goto subroutine for choice
             switch (answer.item) {
                 case "View Product Sales by Department":
                     viewProductSales();
@@ -27,6 +30,7 @@ function supervisor() {
             }
 
             function createNewDepartment() {
+                //prompt user for new department info
                 inquirer
                     .prompt([
                         {
@@ -42,10 +46,14 @@ function supervisor() {
 
                     ])
                     .then(function (answer) {
+                        //insert data into database
                         let sql = "insert into departments(department_name, over_head_costs) values ('" + answer.department_name + "','" + answer.over_head_cost + "')";
                         connection.query(sql, function (err, res) {
+                            //if i have an error log it and exit
                             if (err) oneExit(err); //err, connection, func, message
+                            //confirm add t user
                             console.log("Product added!");
+                            //prompt user for another transaction or exit
                             oneExit("");
                         })
                     }
@@ -53,25 +61,34 @@ function supervisor() {
             }
 
             function viewProductSales() {
+                //create a 2 dementional array for use in table
                 var table_data = [[], []];
                 var selectQuery = connection.query(
+                    //select data from database
+                    //group data by department_id
+                    //join product and department table by department name
                     "select department_id, department_name, over_head_costs, sum(product_sales) as product_sales from products INNER JOIN departments using(department_name) group by department_id;",
                     function (err, res) {
-                        if (err) util.oneExit(err, connection, supervisor, "");
+                        //if there is an error log it and exit
+                        if (err) oneexit(err);//util.oneExit(err, connection, supervisor, "");
                         //let productStr = "";
+                        //for earch data row load the array
                         for (let i in res) {
-                            let myArr = new Array(5)
+                            //let myArr = new Array(5)
                             table_data[i] = myArr;
                             table_data[i][0] = res[i].department_id;
                             table_data[i][1] = res[i].department_name;
                             table_data[i][2] = res[i].over_head_costs.toFixed(2);
                             table_data[i][3] = res[i].product_sales.toFixed(2);
+                            //calculate profit and add 2 decimal places so data is uniform
                             var profit = parseFloat(res[i].product_sales);
                             table_data[i][4] = profit.toFixed(2);
                         }
+                        //declare variable for table
                         let config,
                             output;
 
+                        //define table cells
                         config = {
                             columns: {
                                 0: {
@@ -100,18 +117,22 @@ function supervisor() {
                                 }
                             }
                         };
+                        //create table
                         output = table.table(table_data, config);
 
                         console.log(output);
+                        //prompt user for another transaction or exit
                         oneExit("");
                     }
                 )
             }
             function oneExit(err) {
+                //if i have an error log it an exit
                 if (err) {
                     console.log(err);
                     connection.end();
                 } else {
+                    //ask user if they have another transaction
                     inquirer
                         .prompt([
                             {
@@ -121,9 +142,11 @@ function supervisor() {
                             }
                         ])
                         .then(function (answer) {
+                            //user wants another transaction start over
                             if (answer.exit) {
                                 manager();
                             } else {
+                                //user is done acknowledge and exit
                                 console.log("Thank you. Have a good day!");
                                 connection.end();
                             }

@@ -89,6 +89,7 @@ function manager() {
                         //  Call updateProduct AFTER the INSERT completes
                         for (var i in res) {
                             //console.log(res[i])
+                            //build string to display
                             choiceStr = res[i].item_id;
                             productStr = "ID: " + choiceStr + " ";
                             choiceStr += " " + res[i].product_name;
@@ -97,8 +98,10 @@ function manager() {
                             productStr += "Price: $" + res[i].price + " ";
                             productStr += "Units Remaining: " + res[i].stock_quantity + " " + "\n";
                             //              console.log(productStr);
+                            //put string on array
                             choiceArr.push(choiceStr);
                         }
+                        //list items from the array and then prompt user for item and quantity
                         inquirer
                             .prompt([
                                 {
@@ -114,18 +117,23 @@ function manager() {
                                     choices: choiceArr,
                                 }])
                             .then(function (answer) {
+                                //get the item description
                                 item_desc = answer.item.slice(1, answer.item.length);
+                                //get the item_id
                                 var item = answer.item.substring(0, 1);
+                                //get the quantity
                                 var qty = answer.quantity;
                                 get_inventory(item, answer.quantity);
                             });
                         function get_inventory(item, add_quantity) {
+                            //get the inventory from the database
                             var quantityQuery = connection.query(
                                 "select stock_quantity, price from products where ?",
                                 {
                                     item_id: item
                                 },
                                 function (err, res) {
+                                    //log err and exit if i have one
                                     if (err) oneExit(err);
                                     update_inventory(item, parseInt(add_quantity) + parseInt(res[0].stock_quantity));
                                 }
@@ -141,8 +149,10 @@ function manager() {
                                     item_id: item,
                                 }],
                                 function (err, res) {
+                                    //log err and exit if there is an error
                                     if (err) oneExit(err);
                                     console.log(item_desc + " inventory updated to " + new_quantity + " units");
+                                    //go to prompt user if they want anther transaction or to exit
                                     oneExit("");
                                 }
                             )
@@ -151,6 +161,7 @@ function manager() {
                 )
             }
             function addProduct() {
+                //add a product get all the info needed for a product
                 inquirer
                     .prompt([
                         {
@@ -180,10 +191,14 @@ function manager() {
                         /*                    console.log("Add Product");
                                             console.log(answer);*/
                         //function add_product(item, new_quantity) {
+                        //create a new product on the database
                         let sql = "insert into products(product_name, department_name, price, stock_quantity) values ('" + answer.product + "','" + answer.dept + "','" + answer.price + "','" + answer.stock + "')";
                         connection.query(sql, function (err, res) {
+                            //if I have an error log it and exit
                             if (err) oneExit(err);
+                            //confirm transaction to the user
                             console.log("Product added!");
+                            //go to prompt user if they want anther transaction or to exit
                             oneExit("");
                         });
                         //}
@@ -200,11 +215,14 @@ function manager() {
 
             }
             function oneExit(err) {
+                //if i have an error log it and exit
                 if (err) {
                     console.log(err);
+                    //close database connection
                     connection.end();
                 } else {
                     inquirer
+                        //ask user if they have another transaction
                         .prompt([
                             {
                                 type: "confirm",
@@ -213,10 +231,13 @@ function manager() {
                             }
                         ])
                         .then(function (answer) {
+                            // if they have another transaction start over
                             if (answer.exit) {
                                 manager();
                             } else {
+                                //when they are done exit
                                 console.log("Thank you. Have a good day!");
+                                //close database connection
                                 connection.end();
                             }
                         })

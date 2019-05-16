@@ -32,7 +32,7 @@ function createProduct() {
                 productStr += "Price: $" + res[i].price + " ";
                 productStr += "Units Remaining: " + res[i].stock_quantity + " " + "\n";
                 console.log(productStr);
-                choiceArr.push(choiceStr); 
+                choiceArr.push(choiceStr);
             }
             inquirer
                 .prompt([
@@ -47,50 +47,102 @@ function createProduct() {
                         name: "quantity",
                         Message: "How many do you need?",
                         choices: choiceArr,
-                }])
-                .then(function(answer) {
-                    var item = answer.item.substring(0,1);
+                    }])
+                .then(function (answer) {
+                    var item = answer.item.substring(0, answer.item.indexOf(" "));
                     var qty = answer.quantity;
                     check_quantity(item, qty);
+
                 })
-                function check_quantity(item, request_quantity){
-                    var quantityQuery = connection.query(
-                        "select stock_quantity, price from products where ?",
-                        {
-                            item_id: item
-                        },
-                        function(err, res) {
-                            if(err) oneExit(err);
-                            var inventory = res[0].stock_quantity;
-                            var price = res[0].price;
-                            if(inventory < request_quantity){
-                                console.log("Sorry we do not have enough to satisfy your order.");
-                            }else{ 
-                                update_inventory(item, request_quantity, inventory, price);
+            function check_quantity(item, request_quantity) {
+                var quantityQuery = connection.query(
+                    "select stock_quantity, price from products where ?",
+                    {
+                        item_id: item
+                    },
+                    function (err, res) {
+                        if (err) oneExit(err);
+                        var inventory = res[0].stock_quantity;
+                        var price = res[0].price;
+                        if (inventory < request_quantity) {
+                            console.log("Sorry we do not have enough to satisfy your order.");
+                            oneExit("");
+                        } else {
+                            update_inventory(item, request_quantity, inventory, price);
+                        }
+                    }
+                );
+            };
+            function update_inventory(item, request_quantity, inventory, price) {
+                var new_quantity = inventory - request_quantity;
+                var quantityQuery = connection.query(
+                    "update products set ? where ?",
+                    [{
+                        stock_quantity: new_quantity,
+                    },
+                    {
+                        item_id: item,
+                    }],
+                    function (err, res) {
+                        if (err) oneExit(err);
+                        var cost = price * request_quantity;
+                        console.log("Your Price is $" + cost);
+                        save_cost(item, cost);
+                    }
+                );
+            };
+            function save_cost(item, cost) {
+                var sales_query = connection.query(
+                    "select product_sales from products where ?",
+                    [{
+                        item_id: item,
+                    }],
+                    function (err, res) {
+                        if (err) oneExit(err);
+                        var total_cost = cost + res[0].product_sales;
+                        var sales_update = connection.query(
+                            "update products set ? where  ?;",
+                            [{
+                                product_sales: total_cost,
+                            },
+                            {
+                                item_id: item,
+                            }],
+                            function (err, res) {
+                                if (err) {
+                                    oneExit(err);
+                                }
+                                oneExit("");
                             }
-                        }
-                    );
-                };
-                function update_inventory(item, request_quantity, inventory, price){
-                    var new_quantity = inventory - request_quantity;
-                    var quantityQuery = connection.query(
-                        "update products set ? where ?",
-                        [{
-                            stock_quantity: new_quantity,
-                        },
-                        {
-                            item_id: item,
-                        }],
-                        function(err, res) {
-                            oneExit(err);
-                            //var cost = ;
-                            console.log("Your Price is $" + price * request_quantity);
-                        }
-                    );
-                };
-            })
-    function oneExit(err){
-        if (err) console.log(err);
-        connection.end();
-    }
-}      
+                        )
+                    }
+                )
+            }
+            function oneExit(err) {
+                if (err){
+                    console.log(err);
+                    connection.end();
+                }else{
+                    inquirer
+                        .prompt([
+                            {
+                                type: "confirm",
+                                name: "exit",
+                                message:"Would you like to buy another product?"
+                            }
+                        ])
+                        .then(function(answer){
+                            if(answer.exit){
+                                createProduct();
+                            }else{
+                                console.log("Thank you. Have a good day!");
+                                connection.end();
+                            }
+                        })
+                }
+            }
+
+        }
+    )
+}
+    

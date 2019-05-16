@@ -14,7 +14,7 @@ inquirer
         },
     ])
     .then(function (answer) {
-        console.log(answer.action);
+        console.log(answer);
         switch (answer.action) {
             case "View Products for Sale":
                 viewProducts();
@@ -31,7 +31,6 @@ inquirer
             default:
         }
         function viewProducts() {
-            console.log("View Product");
             var selectQuery = connection.query(
                 "select * from products",
 
@@ -49,7 +48,6 @@ inquirer
             )
         }
         function viewLow() {
-            console.log("View Low");
             var selectQuery = connection.query(
                 "select * from products where stock_quantity < 5",
                 function (err, res) {

@@ -3,6 +3,7 @@ let connection = require("./connection.js");
 let inquirer = require("inquirer");
 let choiceArr = ["View Product Sales by Department", "Create New Department"];
 let table = require("table");
+
 //let util = require("./utilities.js");
 
 
@@ -73,17 +74,30 @@ function supervisor() {
                         if (err) oneexit(err);//util.oneExit(err, connection, supervisor, "");
                         //let productStr = "";
                         //for earch data row load the array
+                        let j = 0;
+
                         for (let i in res) {
-                            //let myArr = new Array(5)
-                            table_data[i] = myArr;
-                            table_data[i][0] = res[i].department_id;
-                            table_data[i][1] = res[i].department_name;
-                            table_data[i][2] = res[i].over_head_costs.toFixed(2);
-                            table_data[i][3] = res[i].product_sales.toFixed(2);
+                            let myArr = new Array(5);
+                            j = parseInt(i) + 1;
+                            if(j===1){
+                                let myArr2 = new Array(5);
+                                table_data[i] = myArr2;
+                                table_data[i][0] = "department_id";
+                                table_data[i][1] = "department_name";
+                                table_data[i][2] = "over_head_costs";
+                                table_data[i][3] = "product_sales";
+                                table_data[i][4] = "profit";
+                            }
+                            table_data[j] = myArr;
+                            table_data[j][0] = res[i].department_id;
+                            table_data[j][1] = res[i].department_name;
+                            table_data[j][2] = res[i].over_head_costs.toFixed(2);
+                            table_data[j][3] = res[i].product_sales.toFixed(2);
                             //calculate profit and add 2 decimal places so data is uniform
-                            var profit = parseFloat(res[i].product_sales);
-                            table_data[i][4] = profit.toFixed(2);
+                            var profit = parseFloat(res[i].product_sales) - parseFloat(res[i].over_head_costs);
+                            table_data[j][4] = profit.toFixed(2);
                         }
+                        
                         //declare variable for table
                         let config,
                             output;
@@ -92,28 +106,28 @@ function supervisor() {
                         config = {
                             columns: {
                                 0: {
-                                    alignment: 'left',
-                                    minWidth: 20
+                                    alignment: 'center',
+                                    minWidth: 25
                                 },
                                 1: {
-                                    alignment: 'center',
-                                    minWidth: 20
+                                    alignment: 'left',
+                                    minWidth: 30
                                 },
                                 2: {
                                     alignment: 'right',
-                                    minWidth: 20
+                                    minWidth: 25
                                 },
                                 3: {
                                     alignment: 'right',
-                                    minWidth: 20
+                                    minWidth: 25
                                 },
                                 4: {
                                     alignment: 'right',
-                                    minWidth: 20
+                                    minWidth: 25
                                 },
                                 5: {
                                     alignment: 'right',
-                                    minWidth: 20
+                                    minWidth: 25
                                 }
                             }
                         };
@@ -144,7 +158,7 @@ function supervisor() {
                         .then(function (answer) {
                             //user wants another transaction start over
                             if (answer.exit) {
-                                manager();
+                                supervisor();
                             } else {
                                 //user is done acknowledge and exit
                                 console.log("Thank you. Have a good day!");

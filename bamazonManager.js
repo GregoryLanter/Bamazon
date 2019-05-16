@@ -120,9 +120,9 @@ function manager() {
                                 //get the item description
                                 item_desc = answer.item.slice(1, answer.item.length);
                                 //get the item_id
-                                var item = answer.item.substring(0, 1);
+                                var item = answer.item.substring(0, answer.item.indexOf(" "));
                                 //get the quantity
-                                var qty = answer.quantity;
+                                //var qty = answer.quantity;
                                 get_inventory(item, answer.quantity);
                             });
                         function get_inventory(item, add_quantity) {
